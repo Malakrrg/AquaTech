@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>aquaTech · Growth Hacking Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0b1a2a 0%, #1a2d42 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #00d4ff, #00a1b0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #0066cc, #00a1b0);
+            color: white;
+        }
+        .btn-primary:hover { transform: scale(1.02); }
+        .btn-outline {
+            background: transparent;
+            color: #00d4ff;
+            border: 2px solid #00d4ff;
+        }
+        .btn-outline:hover { background: rgba(0,212,255,0.1); }
+        a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 16px;
+            padding: 24px;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-4px); }
+        .stat-card .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+        }
+        .stat-card.traffic .icon { background: rgba(0,102,204,0.3); color: #60a5fa; }
+        .stat-card.clicks .icon { background: rgba(34,197,94,0.3); color: #4ade80; }
+        .stat-card.signups .icon { background: rgba(168,85,247,0.3); color: #c084fc; }
+        .stat-card.contacts .icon { background: rgba(245,158,11,0.3); color: #fbbf24; }
+        .stat-card.conversion .icon { background: rgba(236,72,153,0.3); color: #f472b6; }
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .stat-card .label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+        }
+        .panel {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,212,255,0.15);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .panel h2 {
+            padding: 20px;
+            font-size: 1.2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .panel table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .panel th, .panel td {
+            padding: 12px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .panel th {
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+        .panel tbody tr:hover { background: rgba(255,255,255,0.03); }
+        .panel .empty { padding: 40px; text-align: center; color: #64748b; }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-cta { background: rgba(34,197,94,0.3); color: #4ade80; }
+        .badge-signup { background: rgba(168,85,247,0.3); color: #c084fc; }
+        .badge-contact { background: rgba(245,158,11,0.3); color: #fbbf24; }
+        .badge-pageview { background: rgba(0,102,204,0.3); color: #60a5fa; }
+        
+        .note {
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(0,212,255,0.1);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+        .note strong { color: #00d4ff; }
+
+        /* Gestion */
+        .gestion-panel {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 16px;
+            margin-bottom: 32px;
+            overflow: hidden;
+        }
+        .gestion-panel h2 {
+            padding: 16px 20px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .gestion-panel h2:hover { background: rgba(255,255,255,0.03); }
+        .gestion-panel h2 .chevron {
+            transition: transform 0.2s;
+        }
+        .gestion-panel.collapsed .chevron { transform: rotate(-90deg); }
+        .gestion-panel.collapsed .gestion-content { display: none; }
+        .gestion-content {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .gestion-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .gestion-group label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        .gestion-group input, .gestion-group select {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,212,255,0.3);
+            background: rgba(0,0,0,0.3);
+            color: #e2e8f0;
+            font-family: inherit;
+        }
+        .gestion-buttons { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+        .btn-danger {
+            background: rgba(239,68,68,0.2);
+            color: #f87171;
+            border: 2px solid rgba(239,68,68,0.5);
+        }
+        .btn-danger:hover { background: rgba(239,68,68,0.3); }
+        .btn-success {
+            background: rgba(34,197,94,0.2);
+            color: #4ade80;
+            border: 2px solid rgba(34,197,94,0.5);
+        }
+        .btn-success:hover { background: rgba(34,197,94,0.3); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> Growth Hacking Dashboard</h1>
+            <div class="header-actions">
+                <button class="btn btn-outline" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Actualiser
+                </button>
+                <a href="a.html" class="btn btn-outline">
+                    <i class="fas fa-external-link-alt"></i> Voir le site
+                </a>
+            </div>
+        </header>
+
+        <!-- Gestion du dashboard -->
+        <div class="gestion-panel" id="gestionPanel">
+            <h2 onclick="document.getElementById('gestionPanel').classList.toggle('collapsed')">
+                <span><i class="fas fa-cog"></i> Gestion du dashboard</span>
+                <span class="chevron"><i class="fas fa-chevron-down"></i></span>
+            </h2>
+            <div class="gestion-content">
+                <div class="gestion-group">
+                    <label>Filtre par période</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <input type="date" id="filterStart" onchange="refreshData()">
+                        <input type="date" id="filterEnd" onchange="refreshData()">
+                        <button class="btn btn-outline" onclick="clearDateFilter(); refreshData();" style="padding: 10px 14px;">Reset</button>
+                    </div>
+                </div>
+                <div class="gestion-group">
+                    <label>Export des données</label>
+                    <div class="gestion-buttons">
+                        <button class="btn btn-success" onclick="exportSignupsCSV()">
+                            <i class="fas fa-file-csv"></i> Export inscrits (CSV)
+                        </button>
+                        <button class="btn btn-success" onclick="exportEventsCSV()">
+                            <i class="fas fa-file-csv"></i> Export événements (CSV)
+                        </button>
+                    </div>
+                </div>
+                <div class="gestion-group">
+                    <label>Rafraîchissement auto</label>
+                    <div class="gestion-buttons">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()">
+                            Toutes les 30 secondes
+                        </label>
+                    </div>
+                </div>
+                <div class="gestion-group">
+                    <label>Données</label>
+                    <div class="gestion-buttons">
+                        <button class="btn btn-danger" onclick="resetData()">
+                            <i class="fas fa-trash-alt"></i> Réinitialiser tout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card traffic">
+                <div class="icon"><i class="fas fa-users"></i></div>
+                <div class="value" id="stat-traffic">0</div>
+                <div class="label">Visiteurs (trafic)</div>
+            </div>
+            <div class="stat-card clicks">
+                <div class="icon"><i class="fas fa-mouse-pointer"></i></div>
+                <div class="value" id="stat-clicks">0</div>
+                <div class="label">Personnes qui ont cliqué</div>
+            </div>
+            <div class="stat-card signups">
+                <div class="icon"><i class="fas fa-user-plus"></i></div>
+                <div class="value" id="stat-signups">0</div>
+                <div class="label">Personnes inscrites</div>
+            </div>
+            <div class="stat-card contacts">
+                <div class="icon"><i class="fas fa-envelope"></i></div>
+                <div class="value" id="stat-contacts">0</div>
+                <div class="label">Personnes contactées</div>
+            </div>
+            <div class="stat-card conversion">
+                <div class="icon"><i class="fas fa-percentage"></i></div>
+                <div class="value" id="stat-conversion">0%</div>
+                <div class="label">Taux de conversion</div>
+            </div>
+        </div>
+
+        <div class="tables-grid">
+            <div class="panel">
+                <h2><i class="fas fa-list-ul"></i> Inscrits (waitlist)</h2>
+                <div id="signups-list">
+                    <div class="empty">Chargement...</div>
+                </div>
+            </div>
+            <div class="panel">
+                <h2><i class="fas fa-history"></i> Derniers événements</h2>
+                <div id="events-list">
+                    <div class="empty">Chargement...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>Note :</strong> Les données proviennent uniquement des visites réelles sur <a href="a.html" style="color:#00d4ff">le site aquaTech</a> (même origine/navigateur).
+        </div>
+    </div>
+
+    <script>
+        // ----- Get data from localStorage (same origin as a.html) -----
+        function getAnalyticsData() {
+            try {
+                return JSON.parse(localStorage.getItem('analytics_events') || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+        function getWaitlistData() {
+            try {
+                return JSON.parse(localStorage.getItem('waitlist_contacts') || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function getDateFilter() {
+            const start = document.getElementById('filterStart')?.value;
+            const end = document.getElementById('filterEnd')?.value;
+            return { start: start ? new Date(start) : null, end: end ? new Date(end + 'T23:59:59') : null };
+        }
+        function filterByDate(items, dateKey) {
+            const { start, end } = getDateFilter();
+            if (!start && !end) return items;
+            return items.filter(item => {
+                const d = new Date(item[dateKey] || item.timestamp);
+                if (start && d < start) return false;
+                if (end && d > end) return false;
+                return true;
+            });
+        }
+        function clearDateFilter() {
+            document.getElementById('filterStart').value = '';
+            document.getElementById('filterEnd').value = '';
+        }
+
+        function computeStats() {
+            const events = getAnalyticsData();
+            const waitlist = getWaitlistData();
+            const filteredEvents = filterByDate(events, 'timestamp');
+            const filteredWaitlist = filterByDate(waitlist, 'timestamp');
+            
+            const pageViews = filteredEvents.filter(e => e.event === 'page_view');
+            const ctaClicks = filteredEvents.filter(e => 
+                e.event === 'cta_click' || e.event === 'hero_cta_click'
+            ).length;
+            const contactClicks = filteredEvents.filter(e => e.event === 'contact_click').length;
+            
+            const traffic = pageViews.length;
+            const signups = filteredWaitlist.length;
+            const conversion = traffic > 0 ? ((signups / traffic) * 100).toFixed(1) : '0';
+            
+            return {
+                traffic,
+                clicks: ctaClicks,
+                signups,
+                contacts: contactClicks,
+                conversion: conversion + '%',
+                events: filteredEvents.slice(-30).reverse(),
+                waitlist: filteredWaitlist
+            };
+        }
+
+        function refreshData() {
+            const stats = computeStats();
+            
+            document.getElementById('stat-traffic').textContent = stats.traffic;
+            document.getElementById('stat-clicks').textContent = stats.clicks;
+            document.getElementById('stat-signups').textContent = stats.signups;
+            document.getElementById('stat-contacts').textContent = stats.contacts;
+            document.getElementById('stat-conversion').textContent = stats.conversion;
+            
+            // Signups table
+            const signupsEl = document.getElementById('signups-list');
+            const displayWaitlist = stats.waitlist.slice(-20).reverse();
+            if (displayWaitlist.length === 0) {
+                signupsEl.innerHTML = '<div class="empty">Aucun inscrit pour le moment</div>';
+            } else {
+                signupsEl.innerHTML = `
+                    <table>
+                        <thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Date</th></tr></thead>
+                        <tbody>
+                            ${displayWaitlist.map(c => `
+                                <tr>
+                                    <td>${escapeHtml(c.name || '-')}</td>
+                                    <td>${escapeHtml(c.email || '-')}</td>
+                                    <td>${escapeHtml(c.phone || '-')}</td>
+                                    <td>${formatDate(c.timestamp)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+            
+            // Events table
+            const eventsEl = document.getElementById('events-list');
+            if (stats.events.length === 0) {
+                eventsEl.innerHTML = '<div class="empty">Aucun événement enregistré</div>';
+            } else {
+                eventsEl.innerHTML = `
+                    <table>
+                        <thead><tr><th>Type</th><th>Détails</th><th>Date</th></tr></thead>
+                        <tbody>
+                            ${stats.events.map(e => `
+                                <tr>
+                                    <td><span class="badge badge-${getEventBadge(e.event)}">${getEventLabel(e.event)}</span></td>
+                                    <td>${escapeHtml(formatEventData(e))}</td>
+                                    <td>${formatDate(e.timestamp)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+        }
+
+        function getEventBadge(event) {
+            if (event === 'page_view') return 'pageview';
+            if (event === 'cta_click' || event === 'hero_cta_click') return 'cta';
+            if (event === 'signup_success') return 'signup';
+            if (event === 'contact_click') return 'contact';
+            return 'pageview';
+        }
+        function getEventLabel(event) {
+            const labels = {
+                page_view: 'Visite',
+                cta_click: 'Clic CTA',
+                hero_cta_click: 'Clic Hero',
+                signup_success: 'Inscription',
+                contact_click: 'Contact',
+                social_click: 'Réseau',
+                language_change: 'Langue'
+            };
+            return labels[event] || event;
+        }
+        function formatEventData(e) {
+            if (e.event === 'cta_click' || e.event === 'hero_cta_click') 
+                return e.data?.buttonText || '-';
+            if (e.event === 'signup_success') 
+                return e.data?.email || '-';
+            if (e.event === 'contact_click') 
+                return e.data?.type || '-';
+            return e.data ? JSON.stringify(e.data).slice(0, 40) : '-';
+        }
+        function formatDate(iso) {
+            if (!iso) return '-';
+            const d = new Date(iso);
+            return d.toLocaleString('fr-FR', { 
+                day: '2-digit', month: '2-digit', 
+                hour: '2-digit', minute: '2-digit' 
+            });
+        }
+        function escapeHtml(s) {
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+
+        // ----- Gestion -----
+        function exportSignupsCSV() {
+            const waitlist = filterByDate(getWaitlistData(), 'timestamp');
+            const headers = ['Nom', 'Email', 'Téléphone', 'Date'];
+            const rows = waitlist.map(c => [
+                '"' + (c.name || '').replace(/"/g, '""') + '"',
+                '"' + (c.email || '').replace(/"/g, '""') + '"',
+                '"' + (c.phone || '').replace(/"/g, '""') + '"',
+                '"' + (c.timestamp || '') + '"'
+            ].join(';'));
+            const csv = '\ufeff' + [headers.join(';'), ...rows].join('\n');
+            downloadFile(csv, 'aquatech-inscrits-' + new Date().toISOString().slice(0,10) + '.csv', 'text/csv;charset=utf-8');
+        }
+        function exportEventsCSV() {
+            const events = filterByDate(getAnalyticsData(), 'timestamp');
+            const headers = ['Type', 'Détails', 'Date'];
+            const rows = events.map(e => [
+                '"' + (e.event || '').replace(/"/g, '""') + '"',
+                '"' + (formatEventData(e) || '').replace(/"/g, '""') + '"',
+                '"' + (e.timestamp || '') + '"'
+            ].join(';'));
+            const csv = '\ufeff' + [headers.join(';'), ...rows].join('\n');
+            downloadFile(csv, 'aquatech-evenements-' + new Date().toISOString().slice(0,10) + '.csv', 'text/csv;charset=utf-8');
+        }
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+        let autoRefreshInterval = null;
+        function toggleAutoRefresh() {
+            if (document.getElementById('autoRefresh').checked) {
+                autoRefreshInterval = setInterval(refreshData, 30000);
+            } else {
+                clearInterval(autoRefreshInterval);
+            }
+        }
+        function resetData() {
+            if (!confirm('Réinitialiser toutes les données ? Cette action est irréversible.')) return;
+            localStorage.removeItem('analytics_events');
+            localStorage.removeItem('waitlist_contacts');
+            clearDateFilter();
+            refreshData();
+            alert('Données réinitialisées.');
+        }
+
+        // Initial load
+        refreshData();
+    </script>
+</body>
+</html>
